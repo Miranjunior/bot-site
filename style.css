@@ -1,154 +1,124 @@
-/* BASE */
-body {
-  margin: 0;
-  font-family: 'Segoe UI', sans-serif;
-  background: #0e1217;
-  color: #fff;
-  overflow: hidden;
-  display: flex;
-}
+from pathlib import Path
 
-/* SIDEBAR */
-.iq-sidebar {
-  width: 80px;
-  background: #1a1f26;
+# Caminhos para os arquivos separados
+html_path = Path("/mnt/data/index.html")
+css_path = Path("/mnt/data/style.css")
+js_path = Path("/mnt/data/script.js")
+
+# CSS
+css_content = """
+:root {
+  --color-bg: #0e1217;
+  --color-surface: #1a1f26;
+  --color-accent: #4ade80;
+  --color-text: #ffffff;
+  --color-muted: #94a3b8;
+  --color-banner: #238636;
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 32px;
+  --radius-sm: 6px;
+  --font-main: 'Segoe UI', sans-serif;
+}
+html, body {
+  margin: 0;
+  padding: 0;
+  font-family: var(--font-main);
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  width: 100vw;
   height: 100vh;
+}
+body {
+  display: grid;
+  grid-template-columns: 60px 1fr;
+  grid-template-rows: auto 1fr;
+  grid-template-areas:
+    "sidebar topbar"
+    "sidebar main";
+  height: 100vh;
+  overflow: hidden;
+}
+.iq-sidebar {
+  grid-area: sidebar;
+  background: var(--color-surface);
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding-top: 20px;
-  transition: width 0.3s;
+  padding-top: var(--space-md);
+  width: 60px;
+  transition: width 0.3s ease;
+  border-right: 1px solid #2c313a;
 }
-
 .iq-sidebar:hover {
-  width: 220px;
+  width: 200px;
 }
-
-.iq-sidebar .logo {
-  font-size: 24px;
-  color: #4ade80;
-  margin-bottom: 30px;
-  font-weight: bold;
-}
-
 .iq-sidebar .menu {
   list-style: none;
   padding: 0;
+  margin: 0;
   width: 100%;
 }
-
 .iq-sidebar .menu li {
-  padding: 14px;
   display: flex;
   align-items: center;
-  gap: 12px;
-  color: #a1a1aa;
+  gap: var(--space-sm);
+  padding: var(--space-sm) var(--space-md);
+  color: var(--color-muted);
   cursor: pointer;
-  transition: background 0.3s;
+  transition: background 0.3s ease;
 }
-
 .iq-sidebar .menu li:hover {
   background: #2e3744;
-  color: #fff;
+  color: var(--color-text);
 }
-
 .iq-sidebar .menu span {
   display: none;
 }
-
 .iq-sidebar:hover .menu span {
   display: inline;
 }
-
-/* TOPO */
 .iq-topbar {
-  position: fixed;
-  left: 80px;
-  right: 0;
-  top: 0;
-  height: 60px;
-  background: #161b22;
+  grid-area: topbar;
   display: flex;
   align-items: center;
-  gap: 20px;
-  padding: 0 20px;
-  z-index: 10;
+  gap: var(--space-md);
+  padding: 0 var(--space-md);
+  height: 60px;
+  background: #161b22;
   border-bottom: 1px solid #2c313a;
-  transition: left 0.3s, background-color 0.4s ease-in-out, box-shadow 0.4s ease-in-out;
-  animation: slideDownFade 0.8s ease-out;
   box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  animation: slideDownFade 0.8s ease-out;
+  z-index: 10;
 }
-
 @keyframes slideDownFade {
-  from {
-    opacity: 0;
-    transform: translateY(-20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(-20px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
-
-.iq-sidebar:hover ~ .iq-topbar {
-  left: 220px;
+.dropdown {
+  display: flex;
+  flex-direction: column;
 }
-
 .dropdown label {
-  display: block;
   font-size: 10px;
-  margin-bottom: 2px;
-  color: #94a3b8;
+  color: var(--color-muted);
+  margin-bottom: var(--space-xs);
 }
-
 .dropdown select {
   background: #0f172a;
   border: 1px solid #334155;
   color: white;
-  border-radius: 6px;
-  padding: 6px 10px;
+  border-radius: var(--radius-sm);
+  padding: var(--space-sm);
   min-width: 100px;
 }
-
-/* GRÁFICO */
-#chart {
-  position: absolute;
-  left: 80px;
-  top: 60px;
-  right: 0;
-  bottom: 0;
-  background: #0e1217;
-  transition: left 0.3s;
-}
-
-.iq-sidebar:hover ~ #chart {
-  left: 220px;
-}
-
-/* ANIMAÇÃO DOS SELECTS */
-.pulse {
-  animation: pulseEffect 0.6s ease;
-}
-
-@keyframes pulseEffect {
-  0% {
-    box-shadow: 0 0 0 0 rgba(72, 187, 120, 0.7);
-  }
-  70% {
-    box-shadow: 0 0 0 10px rgba(72, 187, 120, 0);
-  }
-  100% {
-    box-shadow: 0 0 0 0 rgba(72, 187, 120, 0);
-  }
-}
-
-/* BANNER DE ATUALIZAÇÃO */
 .banner {
   position: fixed;
   top: 60px;
-  left: 80px;
+  left: 60px;
   right: 0;
-  background: #238636;
+  background: var(--color-banner);
   color: white;
   text-align: center;
   padding: 6px 12px;
@@ -158,11 +128,102 @@ body {
   transition: opacity 0.3s ease-in-out;
   z-index: 20;
 }
-
 .banner.show {
   opacity: 1;
 }
-
 .iq-sidebar:hover ~ .banner {
-  left: 220px;
+  left: 200px;
 }
+main#chart {
+  grid-area: main;
+  background: var(--color-bg);
+  width: 100%;
+  height: 100%;
+}
+"""
+
+# JavaScript
+js_content = """
+document.addEventListener('DOMContentLoaded', () => {
+  const selects = document.querySelectorAll('.dropdown select');
+  const banner = document.getElementById('updateBanner');
+
+  selects.forEach(select => {
+    select.addEventListener('change', () => {
+      const ativo = document.getElementById('pairSelect').value.toUpperCase();
+      const tempo = document.getElementById('intervalSelect').value;
+      banner.innerText = `Gráfico atualizado: ${ativo} - ${tempo}`;
+      banner.classList.add('show');
+      setTimeout(() => banner.classList.remove('show'), 3000);
+    });
+  });
+});
+"""
+
+# HTML com links externos
+html_content = """
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Plataforma Trade</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <nav class="iq-sidebar" aria-label="Navegação lateral">
+    <ul class="menu">
+      <li><i class="fas fa-chart-line"></i><span>Gráfico</span></li>
+      <li><i class="fas fa-bolt"></i><span>Sinais</span></li>
+      <li><i class="fas fa-table"></i><span>Histórico</span></li>
+      <li><i class="fas fa-cog"></i><span>Config</span></li>
+    </ul>
+  </nav>
+
+  <div class="banner" id="updateBanner"></div>
+
+  <header class="iq-topbar">
+    <div class="dropdown">
+      <label for="pairSelect">Ativo</label>
+      <select id="pairSelect">
+        <option value="btcusdt">BTC/USDT</option>
+        <option value="eurusd">EUR/USD</option>
+        <option value="gbpusd">GBP/USD</option>
+        <option value="audusd">AUD/USD</option>
+        <option value="usdchf">USD/CHF</option>
+        <option value="usdjpy">USD/JPY</option>
+        <option value="usdcad">USD/CAD</option>
+      </select>
+    </div>
+    <div class="dropdown">
+      <label for="intervalSelect">Tempo</label>
+      <select id="intervalSelect">
+        <option value="1m" selected>1 min</option>
+        <option value="5m">5 min</option>
+        <option value="15m">15 min</option>
+      </select>
+    </div>
+    <div class="dropdown">
+      <label for="typeSelect">Visualização</label>
+      <select id="typeSelect">
+        <option value="candle">Velas</option>
+        <option value="line">Linha</option>
+        <option value="area">Área</option>
+      </select>
+    </div>
+  </header>
+
+  <main id="chart"></main>
+
+  <script src="script.js"></script>
+</body>
+</html>
+"""
+
+# Escrevendo os arquivos
+html_path.write_text(html_content.strip(), encoding="utf-8")
+css_path.write_text(css_content.strip(), encoding="utf-8")
+js_path.write_text(js_content.strip(), encoding="utf-8")
+
+html_path, css_path, js_path
