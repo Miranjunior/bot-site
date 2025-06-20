@@ -1,39 +1,168 @@
-/* RESET BÁSICO */
-*{margin:0;padding:0;box-sizing:border-box;font-family:Inter,Arial,Helvetica,sans-serif}
-/* PALETA */
-:root{
- --bg:#0d1117;--panel:#161b22;--accent:#1e90ff;--text:#e6edf3;
- --green:#22c55e;--red:#ef4444;--yellow:#fbbf24;--purple:#c084fc;
+/* BASE */
+body {
+  margin: 0;
+  font-family: 'Segoe UI', sans-serif;
+  background: #0e1217;
+  color: #fff;
+  overflow: hidden;
+  display: flex;
 }
 
-/* LAYOUT */
-body{background:var(--bg);color:var(--text);display:flex;flex-direction:column;min-height:100vh}
-header{background:var(--panel);padding:8px 16px;display:flex;justify-content:space-between;align-items:center;gap:1rem}
-h1{font-size:1.4rem;color:var(--accent)}
-.controls{display:flex;gap:.5rem;align-items:center}
-.controls label{font-size:.8rem;opacity:.8}
-select,button{background:var(--bg);color:var(--text);border:1px solid #30363d;border-radius:4px;padding:4px 8px;font-size:.85rem}
-button{cursor:pointer}
-button:hover{background:#1a1f27}
-
-main{flex:1;display:flex;flex-direction:column;gap:1rem;padding:8px 16px}
-.chart{flex:1;min-height:480px}
-
-.signals{background:var(--panel);padding:8px;border-radius:6px;max-height:240px;overflow:auto}
-.signals h2{font-size:1rem;margin-bottom:4px}
-table{width:100%;font-size:.8rem;border-collapse:collapse}
-thead{position:sticky;top:0;background:var(--panel)}
-th,td{padding:4px 6px;text-align:center}
-tbody tr:nth-child(odd){background:#10141b}
-.buy{color:var(--green);font-weight:600}
-.sell{color:var(--red);font-weight:600}
-
-footer{background:var(--panel);text-align:center;font-size:.75rem;padding:4px}
-.signal-banner{
-  position:fixed;top:64px;right:20px;z-index:1000;
-  padding:10px 16px;border-radius:8px;font-weight:600;
-  background:#444;color:#fff;box-shadow:0 4px 12px rgba(0,0,0,.25);
-  opacity:0;transform:translateY(-20px);transition:.3s ease;
+/* SIDEBAR */
+.iq-sidebar {
+  width: 80px;
+  background: #1a1f26;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 20px;
+  transition: width 0.3s;
 }
-.signal-banner.show{opacity:1;transform:translateY(0);}
 
+.iq-sidebar:hover {
+  width: 220px;
+}
+
+.iq-sidebar .logo {
+  font-size: 24px;
+  color: #4ade80;
+  margin-bottom: 30px;
+  font-weight: bold;
+}
+
+.iq-sidebar .menu {
+  list-style: none;
+  padding: 0;
+  width: 100%;
+}
+
+.iq-sidebar .menu li {
+  padding: 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #a1a1aa;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.iq-sidebar .menu li:hover {
+  background: #2e3744;
+  color: #fff;
+}
+
+.iq-sidebar .menu span {
+  display: none;
+}
+
+.iq-sidebar:hover .menu span {
+  display: inline;
+}
+
+/* TOPO */
+.iq-topbar {
+  position: fixed;
+  left: 80px;
+  right: 0;
+  top: 0;
+  height: 60px;
+  background: #161b22;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 0 20px;
+  z-index: 10;
+  border-bottom: 1px solid #2c313a;
+  transition: left 0.3s, background-color 0.4s ease-in-out, box-shadow 0.4s ease-in-out;
+  animation: slideDownFade 0.8s ease-out;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+@keyframes slideDownFade {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.iq-sidebar:hover ~ .iq-topbar {
+  left: 220px;
+}
+
+.dropdown label {
+  display: block;
+  font-size: 10px;
+  margin-bottom: 2px;
+  color: #94a3b8;
+}
+
+.dropdown select {
+  background: #0f172a;
+  border: 1px solid #334155;
+  color: white;
+  border-radius: 6px;
+  padding: 6px 10px;
+  min-width: 100px;
+}
+
+/* GRÁFICO */
+#chart {
+  position: absolute;
+  left: 80px;
+  top: 60px;
+  right: 0;
+  bottom: 0;
+  background: #0e1217;
+  transition: left 0.3s;
+}
+
+.iq-sidebar:hover ~ #chart {
+  left: 220px;
+}
+
+/* ANIMAÇÃO DOS SELECTS */
+.pulse {
+  animation: pulseEffect 0.6s ease;
+}
+
+@keyframes pulseEffect {
+  0% {
+    box-shadow: 0 0 0 0 rgba(72, 187, 120, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(72, 187, 120, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(72, 187, 120, 0);
+  }
+}
+
+/* BANNER DE ATUALIZAÇÃO */
+.banner {
+  position: fixed;
+  top: 60px;
+  left: 80px;
+  right: 0;
+  background: #238636;
+  color: white;
+  text-align: center;
+  padding: 6px 12px;
+  font-size: 14px;
+  font-weight: bold;
+  opacity: 0;
+  transition: opacity 0.3s ease-in-out;
+  z-index: 20;
+}
+
+.banner.show {
+  opacity: 1;
+}
+
+.iq-sidebar:hover ~ .banner {
+  left: 220px;
+}
