@@ -1,118 +1,90 @@
-// script.js
-import { createChart } from 'https://cdn.jsdelivr.net/npm/lightweight-charts@4.1.1/+esm';
+// script.js atualizado com lógica para exibir gráficos e sinais em tempo real
 
-let chart, candleSeries, lineSeries, areaSeries, smaSeries;
-let socket;
-
+// Configuração inicial
 const chartContainer = document.getElementById('chart');
+let chart, candleSeries, smaSeries, socket;
+
+const chartConfig = {
+  layout: {
+    background: { color: '#0e1217' },
+    textColor: '#D1D5DB'
+  },
+  grid: {
+    vertLines: { color: '#2c313a' },
+    horzLines: { color: '#2c313a' },
+  },
+  timeScale: {
+    timeVisible: true,
+    secondsVisible: true,
+  },
+};
 
 function initChart() {
-  chartContainer.innerHTML = '';
-  chart = createChart(chartContainer, {
-    layout: {
-      background: { color: '#0e1217' },
-      textColor: '#ffffff',
-    },
-    grid: {
-      vertLines: { color: '#2c313a' },
-      horzLines: { color: '#2c313a' },
-    },
-    timeScale: { timeVisible: true, secondsVisible: true },
-  });
-
+  if (chart) chart.remove();
+  chart = LightweightCharts.createChart(chartContainer, chartConfig);
   candleSeries = chart.addCandlestickSeries();
-  lineSeries = chart.addLineSeries({ visible: false });
-  areaSeries = chart.addAreaSeries({ visible: false });
-  smaSeries = chart.addLineSeries({ color: '#4ade80', lineWidth: 2 });
+  smaSeries = chart.addLineSeries({
+    color: '#4ade80',
+    lineWidth: 2
+  });
 }
 
-function fetchHistoricalData(pair, interval) {
-  const apiUrl = `https://api.binance.com/api/v3/klines?symbol=${pair.toUpperCase()}&interval=${interval}&limit=200`;
-  return fetch(apiUrl)
+function calculateSMA(data, period = 14) {
+  const sma = [];
+  for (let i = period - 1; i < data.length; i++) {
+    const sum = data.slice(i - period + 1, i + 1).reduce((acc, d) => acc + d.close, 0);
+    sma.push({ time: data[i].time, value: sum / period });
+  }
+  return sma;
+}
+
+function fetchHistorical(pair = 'btcusdt', interval = '1m') {
+  fetch(`https://api.binance.com/api/v3/klines?symbol=${pair.toUpperCase()}&interval=${interval}&limit=200`)
     .then(res => res.json())
-    .then(data => data.map(candle => ({
-      time: candle[0] / 1000,
-      open: parseFloat(candle[1]),
-      high: parseFloat(candle[2]),
-      low: parseFloat(candle[3]),
-      close: parseFloat(candle[4])
-    })));
+    .then(data => {
+      const candles = data.map(d => ({
+        time: d[0] / 1000,
+        open: parseFloat(d[1]),
+        high: parseFloat(d[2]),
+        low: parseFloat(d[3]),
+        close: parseFloat(d[4])
+      }));
+      candleSeries.setData(candles);
+      smaSeries.setData(calculateSMA(candles));
+    });
 }
 
-function calculateSMA(data, period = 9) {
-  return data.map((d, i) => {
-    if (i < period - 1) return { time: d.time, value: null };
-    const sum = data.slice(i - period + 1, i + 1).reduce((acc, val) => acc + val.close, 0);
-    return { time: d.time, value: sum / period };
-  }).filter(d => d.value !== null);
-}
-
-function connectSocket(pair, interval, type) {
+function subscribeToSocket(pair = 'btcusdt', interval = '1m') {
   if (socket) socket.close();
+  socket = new WebSocket(`wss://stream.binance.com:9443/ws/${pair.toLowerCase()}@kline_${interval}`);
 
-  const stream = `${pair.toLowerCase()}@kline_${interval}`;
-  socket = new WebSocket(`wss://stream.binance.com:9443/ws/${stream}`);
-
-  socket.onmessage = e => {
-    const data = JSON.parse(e.data);
-    const k = data.k;
-
-    const candlestick = {
+  socket.onmessage = event => {
+    const msg = JSON.parse(event.data);
+    const k = msg.k;
+    const newCandle = {
       time: k.t / 1000,
       open: parseFloat(k.o),
       high: parseFloat(k.h),
       low: parseFloat(k.l),
-      close: parseFloat(k.c)
+      close: parseFloat(k.c),
     };
-
-    candleSeries.update(candlestick);
-    lineSeries.update({ time: candlestick.time, value: candlestick.close });
-    areaSeries.update({ time: candlestick.time, value: candlestick.close });
-    updateSMA();
-    renderSignal(candlestick);
+    candleSeries.update(newCandle);
   };
 }
 
-function updateSMA() {
-  const seriesData = candleSeries._internal__series._internal__data._internal__items;
-  const formatted = Array.from(seriesData).map(item => item._internal_value);
-  const sma = calculateSMA(formatted);
-  smaSeries.setData(sma);
-}
-
-function renderSignal(candle) {
-  const lastClose = candle.close;
-  const lastOpen = candle.open;
-  const direction = lastClose > lastOpen ? 'ALTA' : 'BAIXA';
-  const message = `SINAL: Comprar para ${direction} | Duração: 1 minuto`;
-
-  const banner = document.getElementById('updateBanner');
-  banner.innerText = message;
-  banner.classList.add('show');
-  setTimeout(() => banner.classList.remove('show'), 5000);
-}
-
-async function startChart() {
+function updateChart() {
   const pair = document.getElementById('pairSelect').value;
   const interval = document.getElementById('intervalSelect').value;
   const type = document.getElementById('typeSelect').value;
 
   initChart();
-  const historicalData = await fetchHistoricalData(pair, interval);
-  candleSeries.setData(historicalData);
-  lineSeries.setData(historicalData.map(d => ({ time: d.time, value: d.close })));
-  areaSeries.setData(historicalData.map(d => ({ time: d.time, value: d.close })));
-  smaSeries.setData(calculateSMA(historicalData));
-
-  candleSeries.applyOptions({ visible: type === 'candle' });
-  lineSeries.applyOptions({ visible: type === 'line' });
-  areaSeries.applyOptions({ visible: type === 'area' });
-
-  connectSocket(pair, interval, type);
+  fetchHistorical(pair, interval);
+  subscribeToSocket(pair, interval);
 }
 
-['pairSelect', 'intervalSelect', 'typeSelect'].forEach(id => {
-  document.getElementById(id).addEventListener('change', startChart);
+document.addEventListener('DOMContentLoaded', () => {
+  updateChart();
+  document.querySelectorAll('.dropdown select').forEach(select => {
+    select.addEventListener('change', updateChart);
+  });
 });
-
-startChart();
