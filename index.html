@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Trade Desk Pro</title>
 
-  <!-- Ícones -->
+  <!-- Font Awesome -->
   <link rel="stylesheet"
         href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
 
@@ -66,6 +66,11 @@
       <span id="priceBadge">---</span>
       <span id="changeBadge">0,00 %</span>
     </div>
+
+    <!-- Botão para abrir/fechar painel de sinais -->
+    <button id="toggleSignals" class="signals-btn" title="Mostrar / ocultar últimos sinais">
+      <i class="fas fa-chart-bar"></i>
+    </button>
   </header>
 
   <!-- Banner de eventos -->
@@ -77,11 +82,12 @@
       <div id="chart" class="chart"></div>
     </section>
 
-    <section class="signal-panel">
+    <section class="signal-panel" id="signalPanel">
       <h2>Últimos Sinais</h2>
       <table>
         <thead>
-          <tr><th>Hora</th><th>Par</th><th>Tf</th><th>Tipo</th><th>Preço</th><th>Exp.</th></tr>
+          <tr><th>Hora</th><th>Par</th><th>Tf</th>
+              <th>Tipo</th><th>Preço</th><th>Exp.</th></tr>
         </thead>
         <tbody id="signalTableBody"></tbody>
       </table>
