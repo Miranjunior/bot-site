@@ -1,205 +1,137 @@
 /* ===== CONFIG ===== */
-const CHART_LIMIT      = 200;   // velas históricas
-const chartDiv         = document.getElementById('chart');
-const pairSelect       = document.getElementById('pairSelect');
-const intervalSelect   = document.getElementById('intervalSelect');
-const signalEl         = document.getElementById('signal');
+const CHART_LIMIT = 500;
+const chartDiv = document.getElementById('chart');
+const pairSel  = document.getElementById('pairSelect');
+const intSel   = document.getElementById('intervalSelect');
+const typeSel  = document.getElementById('typeSelect');
+const fullBtn  = document.getElementById('fullscreenBtn');
+const tableBody= document.getElementById('signalTableBody');
 
-const BOT_TOKEN = '';   // preencha se quiser Telegram
-const CHAT_ID   = '';
+const BOT_TOKEN=''; const CHAT_ID='';      // opcional Telegram
 
 /* ===== STATE ===== */
-let candleSeries, smaSeries, bbUpperSeries, bbLowerSeries;
-let rsiSeries, macdLineSeries, macdSignalSeries, macdHistSeries;
-let ws, prices = [], lastPriceAbove = null;
-let currentPair      = pairSelect.value;     // ex.: btcusdt
-let currentInterval  = intervalSelect.value; // ex.: 1m
+let chart, series, smaSeries, ws, closes=[];
+let lastAbove=null, sigArr=[];
 
 /* ===== INIT ===== */
-initChart();
-loadPair(currentPair, currentInterval);
+createChart();
+loadData();
 
-pairSelect.addEventListener('change', () => {
-  currentPair = pairSelect.value;
-  loadPair(currentPair, currentInterval);
-});
+pairSel.onchange   = ()=>loadData();
+intSel.onchange    = ()=>loadData();
+typeSel.onchange   = ()=>{ rebuildSeries(); };
+fullBtn.onclick    = ()=>document.documentElement.requestFullscreen();
 
-intervalSelect.addEventListener('change', () => {
-  currentInterval = intervalSelect.value;
-  loadPair(currentPair, currentInterval);
-});
-
-/* ===== CREATE CHART ===== */
-function initChart() {
-  window.chart = LightweightCharts.createChart(chartDiv, {
-    layout: { background: { color: '#0d1117' }, textColor: '#c9d1d9' },
-    grid:   { vertLines: { color: '#30363d' }, horzLines: { color: '#30363d' } },
-    timeScale: { timeVisible: true, secondsVisible: false },
-    rightPriceScale: { visible: true },
-    leftPriceScale:  { visible: true },  // escala extra p/ RSI & MACD
+/* ===== FUNÇÕES PRINCIPAIS ===== */
+function createChart(){
+  chart=LightweightCharts.createChart(chartDiv,{
+    layout:{background:{color:'var(--bg)'},textColor:'var(--text)'},
+    grid:{vertLines:{color:'#2c313c'},horzLines:{color:'#2c313c'}},
+    crosshair:{mode:0},
+    rightPriceScale:{visible:true},
+    timeScale:{timeVisible:true,secondsVisible:false},
   });
-
-  // --- Price (escala direita)
-  candleSeries  = chart.addCandlestickSeries();
-  smaSeries     = chart.addLineSeries({ color: '#f7931a', lineWidth: 1 });
-  bbUpperSeries = chart.addLineSeries({ color: '#aaaaaa', lineStyle: 2, lineWidth: 1 });
-  bbLowerSeries = chart.addLineSeries({ color: '#aaaaaa', lineStyle: 2, lineWidth: 1 });
-
-  // --- Indicadores (escala esquerda)
-  rsiSeries       = chart.addLineSeries({ color: '#00bfff', lineWidth: 1, priceScaleId: 'left' });
-  macdLineSeries  = chart.addLineSeries({ color: '#2ecc71', lineWidth: 1, priceScaleId: 'left' });
-  macdSignalSeries= chart.addLineSeries({ color: '#e74c3c', lineWidth: 1, priceScaleId: 'left' });
-  macdHistSeries  = chart.addHistogramSeries({ color: '#9b59b6', priceScaleId: 'left', priceLineVisible: false });
+  rebuildSeries();
 }
 
-/* ===== LOAD DATA ===== */
-async function loadPair(pair, interval) {
-  // reset dados
-  prices = []; lastPriceAbove = null;
-  [candleSeries, smaSeries, bbUpperSeries, bbLowerSeries,
-   rsiSeries, macdLineSeries, macdSignalSeries, macdHistSeries]
-   .forEach(s => s.setData([]));
-  if (ws) ws.close();
+function rebuildSeries(){
+  if(series) chart.removeSeries(series);
+  if(smaSeries) chart.removeSeries(smaSeries);
 
-  // REST histórico
-  const url = `https://api.binance.com/api/v3/klines?symbol=${pair.toUpperCase()}&interval=${interval}&limit=${CHART_LIMIT}`;
-  const klines = await fetch(url).then(r => r.json());
+  const type=typeSel.value;
+  if(type==='candle')      series=chart.addCandlestickSeries();
+  else if(type==='line')   series=chart.addLineSeries({color:'var(--accent)',lineWidth:2});
+  else if(type==='area')   series=chart.addAreaSeries({topColor:'#1e90ff55',bottomColor:'#1e90ff11',lineColor:'#1e90ff',lineWidth:2});
 
-  const history = klines.map(k => ({
-    time:  k[0] / 1000,
-    open:  +k[1],
-    high:  +k[2],
-    low:   +k[3],
-    close: +k[4],
+  smaSeries=chart.addLineSeries({color:'var(--yellow)',lineWidth:1});
+}
+
+async function loadData(){
+  closes=[]; lastAbove=null; sigArr=[]; tableBody.innerHTML='';
+  series.setData([]); smaSeries.setData([]);
+  if(ws) ws.close();
+
+  const sym=pairSel.value.toUpperCase(); const int=intSel.value;
+  const url=`https://api.binance.com/api/v3/klines?symbol=${sym}&interval=${int}&limit=${CHART_LIMIT}`;
+  const kl=await fetch(url).then(r=>r.json());
+  const hist=kl.map(k=>({
+      time:k[0]/1000, open:+k[1],high:+k[2],low:+k[3],close:+k[4]
   }));
-  candleSeries.setData(history);
+  series.setData(hist);
+  hist.forEach(p=>{ closes.push(p.close); if(closes.length>20) closes.shift(); drawSMA(p.time); });
 
-  history.forEach(p => {
-    prices.push(p.close);
-    if (prices.length > 26) prices.shift();
-    updateIndicators(p.time);
-  });
-
-  subscribeWs(pair, interval);
+  connectWS(sym,int);
 }
 
-/* ===== WEBSOCKET ===== */
-function subscribeWs(pair, interval) {
-  ws = new WebSocket(`wss://stream.binance.com:9443/ws/${pair}@kline_${interval}`);
-  ws.onmessage = e => {
-    const k = JSON.parse(e.data).k;
-    const point = {
-      time:  k.t / 1000,
-      open:  +k.o,
-      high:  +k.h,
-      low:   +k.l,
-      close: +k.c,
-    };
+function connectWS(sym,int){
+  ws=new WebSocket(`wss://stream.binance.com:9443/ws/${sym.toLowerCase()}@kline_${int}`);
+  ws.onmessage=e=>{
+    const k=JSON.parse(e.data).k;
+    const p={time:k.t/1000,open:+k.o,high:+k.h,low:+k.l,close:+k.c};
+    series.update(p);
 
-    candleSeries.update(point);
-
-    if (k.x) { // candle fechado
-      prices.push(point.close);
-      if (prices.length > 26) prices.shift();
-      updateIndicators(point.time);
-      detectSignal(point.close);
+    if(k.x){                      // vela fechou
+      closes.push(p.close); if(closes.length>20) closes.shift();
+      drawSMA(p.time);            // atualiza SMA
+      checkSignal(p);
     }
   };
-  ws.onclose = () => console.log('WS closed');
 }
 
-/* ===== INDICATORS ===== */
-function updateIndicators(time) {
-  // --- SMA 20
-  if (prices.length >= 20) {
-    const sma = avg(prices.slice(-20));
-    smaSeries.update({ time, value: sma });
-  }
-
-  // --- Bollinger 20, 2σ
-  if (prices.length >= 20) {
-    const bb = technicalindicators.BollingerBands.calculate({
-      period: 20, stdDev: 2, values: prices.slice(-20),
-    }).pop();
-    bbUpperSeries.update({ time, value: bb.upper });
-    bbLowerSeries.update({ time, value: bb.lower });
-  }
-
-  // --- RSI 14
-  if (prices.length >= 14) {
-    const rsi = technicalindicators.RSI.calculate({
-      period: 14, values: prices.slice(-14),
-    }).pop();
-    rsiSeries.update({ time, value: rsi });
-  }
-
-  // --- MACD (12,26,9)
-  if (prices.length >= 26) {
-    const m = technicalindicators.MACD.calculate({
-      fastPeriod: 12,
-      slowPeriod: 26,
-      signalPeriod: 9,
-      values: prices.slice(-26), // usa 26 pontos
-      SimpleMAOscillator: false,
-      SimpleMASignal: false,
-    }).pop();
-    macdLineSeries.update({ time, value: m.MACD });
-    macdSignalSeries.update({ time, value: m.signal });
-    macdHistSeries.update({ time, value: m.histogram });
-  }
+function drawSMA(t){
+  if(closes.length<20) return;
+  const sma=closes.reduce((a,b)=>a+b,0)/closes.length;
+  smaSeries.update({time:t,value:sma});
 }
 
-/* ===== SIGNAL + ALERTS ===== */
-function detectSignal(price) {
-  const last = smaSeries.lastValue();
-  if (!last) return;                    // ainda não temos SMA
-  const sma = last.value;
-
-  const priceAbove = price > sma;
-  if (lastPriceAbove === null) { lastPriceAbove = priceAbove; return; }
-
-  if (priceAbove !== lastPriceAbove) {
-    const type = priceAbove ? 'COMPRA (Call)' : 'VENDA (Put)';
-    signalEl.textContent = `Sinal gerado: ${type}`;
-    signalEl.style.color = priceAbove ? '#2ecc71' : '#e74c3c';
-    playSound();
-    pushNotification(type);
-    sendTelegram(type, price.toFixed(2));
+function checkSignal(p){
+  const smaLast=smaSeries.lastValue().value;
+  const above=p.close>smaLast;
+  if(lastAbove===null){ lastAbove=above; return; }
+  if(above!==lastAbove){
+    const type=above?'BUY':'SELL';
+    addMarker(p.time,type);
+    addTableRow(p.time,type,p.close);
+    notify(type,p.close);
   }
-  lastPriceAbove = priceAbove;
+  lastAbove=above;
 }
 
-/* ===== UTILS ===== */
-function avg(arr) { return arr.reduce((a, b) => a + b, 0) / arr.length; }
-
-/* ===== AUDIO ===== */
-function playSound() {
-  const ctx = new (window.AudioContext || window.webkitAudioContext)();
-  const o = ctx.createOscillator(), g = ctx.createGain();
-  o.type = 'sine'; o.frequency.value = 600;
-  o.connect(g); g.connect(ctx.destination); g.gain.value = 0.1;
-  o.start(); setTimeout(() => { o.stop(); ctx.close(); }, 250);
+/* ===== SINAIS VISUAIS ===== */
+function addMarker(t,type){
+  series.setMarkers([{time:t,position:type==='BUY'?'belowBar':'aboveBar',color:type==='BUY'?'var(--green)':'var(--red)',shape:'arrowUp',text:type}]);
+}
+function addTableRow(t,type,price){
+  const date=new Date(t*1000).toLocaleTimeString('pt-BR');
+  const tr=`<tr>
+    <td>${date}</td><td>${pairSel.value.toUpperCase()}</td>
+    <td>${intSel.value}</td><td class="${type==='BUY'?'buy':'sell'}">${type}</td>
+    <td>${price.toFixed(2)}</td></tr>`;
+  tableBody.insertAdjacentHTML('afterbegin',tr);
+  if(tableBody.rows.length>30) tableBody.deleteRow(-1);
 }
 
-/* ===== DESKTOP NOTIF ===== */
-function pushNotification(msg) {
-  if (!('Notification' in window)) return;
-  if (Notification.permission === 'granted') {
-    new Notification('Trade Insights', { body: msg });
-  } else if (Notification.permission !== 'denied') {
-    Notification.requestPermission().then(p => {
-      if (p === 'granted') new Notification('Trade Insights', { body: msg });
-    });
-  }
+/* ===== ALERTAS ===== */
+function notify(type,price){
+  playBeep();
+  pushNotif(`${type} ${pairSel.value.toUpperCase()} @ ${price.toFixed(2)}`);
+  sendTG(type,price);
 }
-
-/* ===== TELEGRAM ===== */
-function sendTelegram(type, price) {
-  if (!BOT_TOKEN || !CHAT_ID) return;
-  const text = `${type} | ${currentPair.toUpperCase()} ${price} (${currentInterval})`;
-  fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ chat_id: CHAT_ID, text }),
-  }).catch(e => console.error('TG', e));
+function playBeep(){
+  const ctx=new (window.AudioContext||window.webkitAudioContext)();
+  const o=ctx.createOscillator(),g=ctx.createGain();
+  o.type='square';o.frequency.value=typeSel.value==='BUY'?700:450;o.connect(g);g.connect(ctx.destination);g.gain.value=.1;
+  o.start();setTimeout(()=>{o.stop();ctx.close();},200);
+}
+function pushNotif(msg){
+  if(!('Notification'in window)) return;
+  if(Notification.permission==='granted') new Notification('Trade Insights',{body:msg});
+  else if(Notification.permission!=='denied') Notification.requestPermission();
+}
+function sendTG(type,price){
+  if(!BOT_TOKEN||!CHAT_ID) return;
+  fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`,{
+    method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({chat_id:CHAT_ID,text:`${type} ${pairSel.value.toUpperCase()} ${price.toFixed(2)} (${intSel.value})`})
+  });
 }
