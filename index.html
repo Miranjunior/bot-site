@@ -1,223 +1,180 @@
-<!DOCTYPE html>
+from pathlib import Path
+
+# Separar o conteúdo em arquivos distintos
+html_path = Path("/mnt/data/index.html")
+css_path = Path("/mnt/data/style.css")
+js_path = Path("/mnt/data/script.js")
+
+# Conteúdo CSS separado do <style>
+css_content = """
+:root {
+  --color-bg: #0e1217;
+  --color-surface: #1a1f26;
+  --color-accent: #4ade80;
+  --color-text: #ffffff;
+  --color-muted: #94a3b8;
+  --color-banner: #238636;
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 32px;
+  --radius-sm: 6px;
+  --font-main: 'Segoe UI', sans-serif;
+}
+html, body {
+  margin: 0;
+  padding: 0;
+  font-family: var(--font-main);
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  width: 100vw;
+  height: 100vh;
+}
+body {
+  display: grid;
+  grid-template-columns: 60px 1fr;
+  grid-template-rows: auto 1fr;
+  grid-template-areas:
+    "sidebar topbar"
+    "sidebar main";
+  height: 100vh;
+  overflow: hidden;
+}
+/* Sidebar */
+.iq-sidebar {
+  grid-area: sidebar;
+  background: var(--color-surface);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: var(--space-md);
+  width: 60px;
+  transition: width 0.3s ease;
+  border-right: 1px solid #2c313a;
+}
+.iq-sidebar:hover {
+  width: 200px;
+}
+.iq-sidebar .menu {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  width: 100%;
+}
+.iq-sidebar .menu li {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-sm) var(--space-md);
+  color: var(--color-muted);
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+.iq-sidebar .menu li:hover {
+  background: #2e3744;
+  color: var(--color-text);
+}
+.iq-sidebar .menu span {
+  display: none;
+}
+.iq-sidebar:hover .menu span {
+  display: inline;
+}
+/* Topbar */
+.iq-topbar {
+  grid-area: topbar;
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  padding: 0 var(--space-md);
+  height: 60px;
+  background: #161b22;
+  border-bottom: 1px solid #2c313a;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  animation: slideDownFade 0.8s ease-out;
+  z-index: 10;
+}
+@keyframes slideDownFade {
+  from { opacity: 0; transform: translateY(-20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.dropdown {
+  display: flex;
+  flex-direction: column;
+}
+.dropdown label {
+  font-size: 10px;
+  color: var(--color-muted);
+  margin-bottom: var(--space-xs);
+}
+.dropdown select {
+  background: #0f172a;
+  border: 1px solid #334155;
+  color: white;
+  border-radius: var(--radius-sm);
+  padding: var(--space-sm);
+  min-width: 100px;
+}
+/* Banner */
+.banner {
+  position: fixed;
+  top: 60px;
+  left: 60px;
+  right: 0;
+  background: var(--color-banner);
+  color: white;
+  text-align: center;
+  padding: 6px 12px;
+  font-size: 14px;
+  font-weight: bold;
+  opacity: 0;
+  transition: opacity 0.3s ease-in-out;
+  z-index: 20;
+}
+.banner.show {
+  opacity: 1;
+}
+.iq-sidebar:hover ~ .banner {
+  left: 200px;
+}
+main#chart {
+  grid-area: main;
+  background: var(--color-bg);
+  width: 100%;
+  height: 100%;
+}
+"""
+
+# Conteúdo JavaScript separado
+js_content = """
+document.addEventListener('DOMContentLoaded', () => {
+  const selects = document.querySelectorAll('.dropdown select');
+  const banner = document.getElementById('updateBanner');
+
+  selects.forEach(select => {
+    select.addEventListener('change', () => {
+      const ativo = document.getElementById('pairSelect').value.toUpperCase();
+      const tempo = document.getElementById('intervalSelect').value;
+      banner.innerText = `Gráfico atualizado: ${ativo} - ${tempo}`;
+      banner.classList.add('show');
+      setTimeout(() => banner.classList.remove('show'), 3000);
+    });
+  });
+});
+"""
+
+# Conteúdo HTML com link para arquivos externos
+html_content = f"""<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Plataforma Trade</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
-  <style>
-    /* =====================
-       VARIÁVEIS DO TEMA
-    ====================== */
-    :root {
-      --color-bg: #0e1217;
-      --color-surface: #1a1f26;
-      --color-accent: #4ade80;
-      --color-text: #ffffff;
-      --color-muted: #94a3b8;
-      --color-banner: #238636;
-      --space-xs: 4px;
-      --space-sm: 8px;
-      --space-md: 16px;
-      --space-lg: 32px;
-      --radius-sm: 6px;
-      --font-main: 'Segoe UI', sans-serif;
-    }
-
-    html, body {
-      margin: 0;
-      padding: 0;
-      font-family: var(--font-main);
-      background-color: var(--color-bg);
-      color: var(--color-text);
-    }
-
-    body {
-      display: grid;
-      grid-template-columns: auto 1fr;
-      grid-template-rows: auto 1fr;
-      grid-template-areas:
-        "sidebar topbar"
-        "sidebar main";
-      height: 100vh;
-      overflow: hidden;
-    }
-
-    /* =====================
-       SIDEBAR
-    ====================== */
-    .iq-sidebar {
-      grid-area: sidebar;
-      background: var(--color-surface);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding-top: var(--space-lg);
-      width: 80px;
-      transition: width 0.3s;
-    }
-
-    .iq-sidebar:hover {
-      width: 220px;
-    }
-
-    .iq-sidebar .logo {
-      font-size: 24px;
-      color: var(--color-accent);
-      margin-bottom: var(--space-lg);
-      font-weight: bold;
-    }
-
-    .iq-sidebar .menu {
-      list-style: none;
-      padding: 0;
-      width: 100%;
-    }
-
-    .iq-sidebar .menu li {
-      display: flex;
-      align-items: center;
-      gap: var(--space-sm);
-      padding: var(--space-sm) var(--space-md);
-      color: var(--color-muted);
-      cursor: pointer;
-      transition: background 0.3s ease;
-    }
-
-    .iq-sidebar .menu li:hover {
-      background: #2e3744;
-      color: var(--color-text);
-    }
-
-    .iq-sidebar .menu span {
-      display: none;
-    }
-
-    .iq-sidebar:hover .menu span {
-      display: inline;
-    }
-
-    /* =====================
-       TOPBAR
-    ====================== */
-    .iq-topbar {
-      grid-area: topbar;
-      display: flex;
-      align-items: center;
-      gap: var(--space-md);
-      padding: 0 var(--space-md);
-      height: 60px;
-      background: #161b22;
-      border-bottom: 1px solid #2c313a;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-      animation: slideDownFade 0.8s ease-out;
-      z-index: 10;
-    }
-
-    @keyframes slideDownFade {
-      from { opacity: 0; transform: translateY(-20px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
-
-    .dropdown {
-      display: flex;
-      flex-direction: column;
-    }
-
-    .dropdown label {
-      font-size: 10px;
-      color: var(--color-muted);
-      margin-bottom: var(--space-xs);
-    }
-
-    .dropdown select {
-      background: #0f172a;
-      border: 1px solid #334155;
-      color: white;
-      border-radius: var(--radius-sm);
-      padding: var(--space-sm);
-      min-width: 100px;
-    }
-
-    .pulse {
-      animation: pulseEffect 0.6s ease;
-    }
-
-    @keyframes pulseEffect {
-      0% { box-shadow: 0 0 0 0 rgba(72, 187, 120, 0.7); }
-      70% { box-shadow: 0 0 0 10px rgba(72, 187, 120, 0); }
-      100% { box-shadow: 0 0 0 0 rgba(72, 187, 120, 0); }
-    }
-
-    /* =====================
-       BANNER DE AVISO
-    ====================== */
-    .banner {
-      position: fixed;
-      top: 60px;
-      left: 80px;
-      right: 0;
-      background: var(--color-banner);
-      color: white;
-      text-align: center;
-      padding: 6px 12px;
-      font-size: 14px;
-      font-weight: bold;
-      opacity: 0;
-      transition: opacity 0.3s ease-in-out;
-      z-index: 20;
-    }
-
-    .banner.show {
-      opacity: 1;
-    }
-
-    .iq-sidebar:hover ~ .banner {
-      left: 220px;
-    }
-
-    /* =====================
-       CONTEÚDO PRINCIPAL
-    ====================== */
-    main#chart {
-      grid-area: main;
-      background: var(--color-bg);
-    }
-
-    /* =====================
-       MEDIA QUERIES
-    ====================== */
-    @media (max-width: 768px) {
-      body {
-        grid-template-columns: 1fr;
-        grid-template-rows: auto auto 1fr;
-        grid-template-areas:
-          "topbar"
-          "sidebar"
-          "main";
-      }
-
-      .iq-sidebar {
-        flex-direction: row;
-        height: auto;
-        width: 100%;
-        overflow-x: auto;
-      }
-
-      .iq-topbar {
-        left: 0;
-      }
-
-      .banner {
-        left: 0;
-      }
-    }
-  </style>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <!-- SIDEBAR -->
   <nav class="iq-sidebar" aria-label="Navegação lateral">
-    <div class="logo">IQ</div>
     <ul class="menu">
       <li><i class="fas fa-chart-line"></i><span>Gráfico</span></li>
       <li><i class="fas fa-bolt"></i><span>Sinais</span></li>
@@ -226,10 +183,8 @@
     </ul>
   </nav>
 
-  <!-- BANNER DE ATUALIZAÇÃO -->
-  <div class="banner" id="updateBanner" role="alert"></div>
+  <div class="banner" id="updateBanner"></div>
 
-  <!-- TOPO -->
   <header class="iq-topbar">
     <div class="dropdown">
       <label for="pairSelect">Ativo</label>
@@ -261,27 +216,16 @@
     </div>
   </header>
 
-  <!-- GRÁFICO -->
-  <main id="chart" role="main"></main>
+  <main id="chart"></main>
 
-  <script>
-    document.addEventListener('DOMContentLoaded', function () {
-      const selects = document.querySelectorAll('.dropdown select');
-      const banner = document.getElementById('updateBanner');
-
-      selects.forEach(select => {
-        select.addEventListener('change', function () {
-          select.classList.add('pulse');
-          setTimeout(() => select.classList.remove('pulse'), 600);
-
-          const ativo = document.getElementById('pairSelect').value.toUpperCase();
-          const tempo = document.getElementById('intervalSelect').value;
-          banner.innerText = `Gráfico atualizado: ${ativo} - ${tempo}`;
-          banner.classList.add('show');
-          setTimeout(() => banner.classList.remove('show'), 3000);
-        });
-      });
-    });
-  </script>
+  <script src="script.js"></script>
 </body>
 </html>
+"""
+
+# Salvar os arquivos
+html_path.write_text(html_content, encoding="utf-8")
+css_path.write_text(css_content, encoding="utf-8")
+js_path.write_text(js_content, encoding="utf-8")
+
+"/mnt/data/index.html", "/mnt/data/style.css", "/mnt/data/script.js"
