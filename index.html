@@ -2,38 +2,39 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
   <title>Trade Desk Pro</title>
 
-  <!-- Ícones -->
-  <link rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <!-- Font Awesome -->
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+    crossorigin="anonymous"
+  />
 
   <!-- Estilos -->
   <link rel="stylesheet" href="style.css" />
 
-  <!-- Biblioteca de gráficos -->
+  <!-- Lightweight Charts -->
   <script src="https://unpkg.com/lightweight-charts@4.1.1/dist/lightweight-charts.standalone.production.js"></script>
 </head>
 <body>
-  <!-- ───────── SIDEBAR ───────── -->
+  <!-- SIDEBAR -->
   <aside class="sidebar">
     <ul>
-      <li data-tip="Painel"><i class="fas fa-chart-pie"></i></li>
-      <li data-tip="Sinais"><i class="fas fa-bolt"></i></li>
-      <li data-tip="Histórico"><i class="fas fa-table"></i></li>
-      <li data-tip="Config."><i class="fas fa-cog"></i></li>
-      <li data-tip="Ajuda"><i class="fas fa-circle-info"></i></li>
+      <li id="fibBtn"   data-tip="Fibonacci"><i class="fas fa-chart-area"></i></li>
+      <li id="trendBtn" data-tip="Tendência"><i class="fas fa-chart-line"></i></li>
+      <li id="zoomBtn"  data-tip="Zoom"><i class="fas fa-search-plus"></i></li>
+      <li id="indBtn"   data-tip="Indicadores"><i class="fas fa-chart-bar"></i></li>
     </ul>
   </aside>
 
-  <!-- ───────── TOPBAR ───────── -->
+  <!-- TOPBAR -->
   <header class="topbar">
     <h1>Trade Desk Pro</h1>
-
     <div class="selectors">
       <div class="select-box">
-        <label>Ativo</label>
+        <label for="pairSelect">Ativo</label>
         <select id="pairSelect">
           <option value="btcusdt">BTC/USDT</option>
           <option value="ethusdt">ETH/USDT</option>
@@ -42,18 +43,16 @@
           <option value="eurusd">EUR/USD</option>
         </select>
       </div>
-
       <div class="select-box">
-        <label>Tempo</label>
+        <label for="intervalSelect">Tempo</label>
         <select id="intervalSelect">
           <option value="1m" selected>1 m</option>
           <option value="5m">5 m</option>
           <option value="15m">15 m</option>
         </select>
       </div>
-
       <div class="select-box">
-        <label>Visual</label>
+        <label for="typeSelect">Visual</label>
         <select id="typeSelect">
           <option value="candle">Velas</option>
           <option value="line">Linha</option>
@@ -66,29 +65,37 @@
       <span id="priceBadge">---</span>
       <span id="changeBadge">0,00 %</span>
     </div>
+
+    <button id="toggleSignals" class="signals-btn" title="Mostrar/ocultar sinais">
+      <i class="fas fa-chart-bar"></i>
+    </button>
   </header>
 
-  <!-- Banner de eventos -->
+  <!-- BANNER -->
   <div id="eventBanner" class="banner"></div>
 
-  <!-- ───────── WORKSPACE ───────── -->
+  <!-- WORKSPACE -->
   <main class="workspace">
     <section class="chart-panel">
       <div id="chart" class="chart"></div>
-    </section>
 
-    <section class="signal-panel">
-      <h2>Últimos Sinais</h2>
-      <table>
-        <thead>
-          <tr><th>Hora</th><th>Par</th><th>Tf</th><th>Tipo</th><th>Preço</th><th>Exp.</th></tr>
-        </thead>
-        <tbody id="signalTableBody"></tbody>
-      </table>
+      <!-- OVERLAY SINAIS -->
+      <div class="signal-overlay collapsed" id="signalPanel">
+        <button class="close-signals" title="Fechar">
+          <i class="fas fa-times"></i>
+        </button>
+        <h2>Últimos Sinais</h2>
+        <table>
+          <thead>
+            <tr><th>Hora</th><th>Par</th><th>Tf</th><th>Tipo</th><th>Preço</th><th>Exp.</th></tr>
+          </thead>
+          <tbody id="signalTableBody"></tbody>
+        </table>
+      </div>
     </section>
   </main>
 
-  <!-- Lógica -->
+  <!-- LÓGICA -->
   <script src="script.js"></script>
 </body>
 </html>
