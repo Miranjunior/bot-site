@@ -3,11 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Trade Insights v2</title>
+  <title>Trade Insights v2.2</title>
 
   <link rel="stylesheet" href="style.css" />
-
-  <!-- Libs -->
   <script src="https://unpkg.com/lightweight-charts@4.1.1/dist/lightweight-charts.standalone.production.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/technicalindicators@4.0.5/dist/browser.js"></script>
 </head>
@@ -16,6 +14,7 @@
     <h1>Trade Insights</h1>
 
     <div class="controls">
+      <!-- somente cripto com refresh <1 s -->
       <label for="pairSelect">Ativo</label>
       <select id="pairSelect">
         <option value="btcusdt">BTC/USDT</option>
@@ -25,14 +24,13 @@
         <option value="xrpusdt">XRP/USDT</option>
         <option value="adausdt">ADA/USDT</option>
         <option value="dogeusdt">DOGE/USDT</option>
-        <option value="eurusdt">EUR/USDT</option>
       </select>
 
       <label for="intervalSelect">Tempo</label>
       <select id="intervalSelect">
-        <option value="1m" selected>1m</option>
-        <option value="5m">5m</option>
-        <option value="15m">15m</option>
+        <option value="1m" selected>1 m</option>
+        <option value="5m">5 m</option>
+        <option value="15m">15 m</option>
       </select>
 
       <label for="typeSelect">Gráfico</label>
@@ -45,6 +43,9 @@
       <button id="fullscreenBtn" title="Tela cheia">⛶</button>
     </div>
   </header>
+
+  <!-- banner de status/sinais -->
+  <div id="signalBanner" class="signal-banner">Conectando…</div>
 
   <main>
     <div id="chart" class="chart"></div>
@@ -59,7 +60,6 @@
   </main>
 
   <footer>© 2025 – Trade Insights</footer>
-
   <script src="script.js"></script>
 </body>
 </html>
