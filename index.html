@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Plataforma de Análise de Trade em Tempo Real</title>
+    <link rel="stylesheet" href="style.css" />
+    <!-- TradingView Lightweight Charts CDN -->
+    <script src="https://unpkg.com/lightweight-charts@4.1.1/dist/lightweight-charts.standalone.production.js"></script>
+</head>
+<body>
+    <header>
+        <h1>Trade Insights</h1>
+        <div class="controls">
+            <label for="pairSelect">Par:</label>
+            <select id="pairSelect">
+                <option value="btcusdt">BTC/USDT</option>
+                <option value="ethusdt">ETH/USDT</option>
+                <option value="bnbusdt">BNB/USDT</option>
+            </select>
+        </div>
+    </header>
+    <main>
+        <div id="chart" class="chart"></div>
+        <p id="signal" class="signal"></p>
+    </main>
+    <footer>
+        <small>&copy; 2025 - Plataforma de Análise de Operações Binárias</small>
+    </footer>
+    <script src="script.js"></script>
+</body>
+</html>
