@@ -4,20 +4,14 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1.0" />
   <title>Trade Desk Pro</title>
-
   <!-- Font Awesome -->
-  <link
-    rel="stylesheet"
-    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
-    crossorigin="anonymous"
-  />
-
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
   <!-- Estilos -->
   <link rel="stylesheet" href="style.css" />
-
   <!-- Lightweight Charts -->
   <script src="https://unpkg.com/lightweight-charts@4.1.1/dist/lightweight-charts.standalone.production.js"></script>
 </head>
+
 <body>
   <!-- SIDEBAR -->
   <aside class="sidebar">
@@ -34,7 +28,7 @@
     <h1>Trade Desk Pro</h1>
     <div class="selectors">
       <div class="select-box">
-        <label for="pairSelect">Ativo</label>
+        <label>Ativo</label>
         <select id="pairSelect">
           <option value="btcusdt">BTC/USDT</option>
           <option value="ethusdt">ETH/USDT</option>
@@ -44,7 +38,7 @@
         </select>
       </div>
       <div class="select-box">
-        <label for="intervalSelect">Tempo</label>
+        <label>Tempo</label>
         <select id="intervalSelect">
           <option value="1m" selected>1 m</option>
           <option value="5m">5 m</option>
@@ -52,7 +46,7 @@
         </select>
       </div>
       <div class="select-box">
-        <label for="typeSelect">Visual</label>
+        <label>Visual</label>
         <select id="typeSelect">
           <option value="candle">Velas</option>
           <option value="line">Linha</option>
@@ -67,7 +61,7 @@
     </div>
 
     <button id="toggleSignals" class="signals-btn" title="Mostrar/ocultar sinais">
-      <i class="fas fa-chart-bar"></i>
+      <i class="fas fa-list"></i>
     </button>
   </header>
 
@@ -81,14 +75,10 @@
 
       <!-- OVERLAY SINAIS -->
       <div class="signal-overlay collapsed" id="signalPanel">
-        <button class="close-signals" title="Fechar">
-          <i class="fas fa-times"></i>
-        </button>
+        <button class="close-signals" title="Fechar"><i class="fas fa-times"></i></button>
         <h2>Últimos Sinais</h2>
         <table>
-          <thead>
-            <tr><th>Hora</th><th>Par</th><th>Tf</th><th>Tipo</th><th>Preço</th><th>Exp.</th></tr>
-          </thead>
+          <thead><tr><th>Hora</th><th>Par</th><th>Tf</th><th>Tipo</th><th>Preço</th></tr></thead>
           <tbody id="signalTableBody"></tbody>
         </table>
       </div>
