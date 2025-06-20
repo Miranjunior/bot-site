@@ -1,229 +1,77 @@
-from pathlib import Path
+/* =====  VARIÁVEIS  ===== */
+:root{
+  --bg:#0e1217;
+  --surface:#151921cc;      /* glass */
+  --accent:#22c55e;
+  --text:#f1f5f9;
+  --muted:#94a3b8;
+  --banner:#238636;
+  --radius:10px;
+  --blur:12px;
+  --sidebar-w:72px;
+  --sidebar-w-open:220px;
+  --topbar-h:64px;
+  --transition:.35s cubic-bezier(.4,0,.2,1);
+}
 
-# Caminhos para os arquivos separados
-html_path = Path("/mnt/data/index.html")
-css_path = Path("/mnt/data/style.css")
-js_path = Path("/mnt/data/script.js")
+/* =====  RESET  ===== */
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',sans-serif;background:var(--bg);color:var(--text);height:100vh;display:grid;
+     grid-template-columns:var(--sidebar-w) 1fr;
+     grid-template-rows:var(--topbar-h) 1fr;}
+ul{list-style:none}
 
-# CSS
-css_content = """
-:root {
-  --color-bg: #0e1217;
-  --color-surface: #1a1f26;
-  --color-accent: #4ade80;
-  --color-text: #ffffff;
-  --color-muted: #94a3b8;
-  --color-banner: #238636;
-  --space-xs: 4px;
-  --space-sm: 8px;
-  --space-md: 16px;
-  --space-lg: 32px;
-  --radius-sm: 6px;
-  --font-main: 'Segoe UI', sans-serif;
-}
-html, body {
-  margin: 0;
-  padding: 0;
-  font-family: var(--font-main);
-  background-color: var(--color-bg);
-  color: var(--color-text);
-  width: 100vw;
-  height: 100vh;
-}
-body {
-  display: grid;
-  grid-template-columns: 60px 1fr;
-  grid-template-rows: auto 1fr;
-  grid-template-areas:
-    "sidebar topbar"
-    "sidebar main";
-  height: 100vh;
-  overflow: hidden;
-}
-.iq-sidebar {
-  grid-area: sidebar;
-  background: var(--color-surface);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding-top: var(--space-md);
-  width: 60px;
-  transition: width 0.3s ease;
-  border-right: 1px solid #2c313a;
-}
-.iq-sidebar:hover {
-  width: 200px;
-}
-.iq-sidebar .menu {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  width: 100%;
-}
-.iq-sidebar .menu li {
-  display: flex;
-  align-items: center;
-  gap: var(--space-sm);
-  padding: var(--space-sm) var(--space-md);
-  color: var(--color-muted);
-  cursor: pointer;
-  transition: background 0.3s ease;
-}
-.iq-sidebar .menu li:hover {
-  background: #2e3744;
-  color: var(--color-text);
-}
-.iq-sidebar .menu span {
-  display: none;
-}
-.iq-sidebar:hover .menu span {
-  display: inline;
-}
-.iq-topbar {
-  grid-area: topbar;
-  display: flex;
-  align-items: center;
-  gap: var(--space-md);
-  padding: 0 var(--space-md);
-  height: 60px;
-  background: #161b22;
-  border-bottom: 1px solid #2c313a;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-  animation: slideDownFade 0.8s ease-out;
-  z-index: 10;
-}
-@keyframes slideDownFade {
-  from { opacity: 0; transform: translateY(-20px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-.dropdown {
-  display: flex;
-  flex-direction: column;
-}
-.dropdown label {
-  font-size: 10px;
-  color: var(--color-muted);
-  margin-bottom: var(--space-xs);
-}
-.dropdown select {
-  background: #0f172a;
-  border: 1px solid #334155;
-  color: white;
-  border-radius: var(--radius-sm);
-  padding: var(--space-sm);
-  min-width: 100px;
-}
-.banner {
-  position: fixed;
-  top: 60px;
-  left: 60px;
-  right: 0;
-  background: var(--color-banner);
-  color: white;
-  text-align: center;
-  padding: 6px 12px;
-  font-size: 14px;
-  font-weight: bold;
-  opacity: 0;
-  transition: opacity 0.3s ease-in-out;
-  z-index: 20;
-}
-.banner.show {
-  opacity: 1;
-}
-.iq-sidebar:hover ~ .banner {
-  left: 200px;
-}
-main#chart {
-  grid-area: main;
-  background: var(--color-bg);
-  width: 100%;
-  height: 100%;
-}
-"""
+/* =====  SIDEBAR  ===== */
+.sidebar{grid-row:1/3;grid-column:1/2;background:var(--surface);backdrop-filter:blur(var(--blur));
+         display:flex;flex-direction:column;align-items:center;padding-top:20px;transition:width var(--transition);}
+.sidebar ul li{width:100%;display:flex;justify-content:center;align-items:center;
+               padding:16px 0;position:relative;cursor:pointer;}
+.sidebar ul li i{font-size:20px;color:var(--muted);transition:color .3s}
+.sidebar ul li:hover i{color:var(--accent)}
+.sidebar ul li::after{/* tooltip */}
+  content:attr(data-tip);position:absolute;left:calc(var(--sidebar-w) + 12px);opacity:0;
+  background:#1f2937;color:#e2e8f0;font-size:12px;padding:4px 8px;border-radius:4px;
+  white-space:nowrap;pointer-events:none;transform:translateY(-50%);transition:opacity .2s}
+.sidebar:hover{width:var(--sidebar-w-open);}
+.sidebar:hover ul li::after{opacity:1}
 
-# JavaScript
-js_content = """
-document.addEventListener('DOMContentLoaded', () => {
-  const selects = document.querySelectorAll('.dropdown select');
-  const banner = document.getElementById('updateBanner');
+/* =====  TOPBAR  ===== */
+.topbar{grid-column:2/3;grid-row:1/2;display:flex;align-items:center;gap:24px;
+        padding:0 32px;background:var(--surface);backdrop-filter:blur(var(--blur));
+        border-bottom:1px solid #293038;}
+.topbar h1{font-size:20px;margin-right:auto;font-weight:600}
+.selectors{display:flex;gap:16px}
+.select-box{display:flex;flex-direction:column;font-size:12px}
+.select-box label{color:var(--muted);margin-bottom:4px}
+.select-box select{background:#1e2630;border:1px solid #334155;color:var(--text);
+                   border-radius:var(--radius);padding:6px 10px;min-width:110px}
+.status-box{display:flex;gap:12px;font-weight:600}
+#priceBadge{color:var(--accent)}
+#changeBadge.negative{color:#ef4444}
 
-  selects.forEach(select => {
-    select.addEventListener('change', () => {
-      const ativo = document.getElementById('pairSelect').value.toUpperCase();
-      const tempo = document.getElementById('intervalSelect').value;
-      banner.innerText = `Gráfico atualizado: ${ativo} - ${tempo}`;
-      banner.classList.add('show');
-      setTimeout(() => banner.classList.remove('show'), 3000);
-    });
-  });
-});
-"""
+/* =====  BANNER  ===== */
+.banner{position:fixed;top:var(--topbar-h);left:var(--sidebar-w);right:0;padding:8px 0;
+        text-align:center;background:var(--banner);color:#fff;font-weight:600;opacity:0;
+        transition:opacity .3s ease}
+.banner.show{opacity:1}
+.sidebar:hover~.banner{left:var(--sidebar-w-open)}
 
-# HTML com links externos
-html_content = """
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Plataforma Trade</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
-  <link rel="stylesheet" href="style.css" />
-</head>
-<body>
-  <nav class="iq-sidebar" aria-label="Navegação lateral">
-    <ul class="menu">
-      <li><i class="fas fa-chart-line"></i><span>Gráfico</span></li>
-      <li><i class="fas fa-bolt"></i><span>Sinais</span></li>
-      <li><i class="fas fa-table"></i><span>Histórico</span></li>
-      <li><i class="fas fa-cog"></i><span>Config</span></li>
-    </ul>
-  </nav>
+/* =====  WORKSPACE  ===== */
+.workspace{grid-column:2/3;grid-row:2/3;display:grid;
+           grid-template-columns:2fr 1fr;grid-gap:16px;padding:16px;height:calc(100vh - var(--topbar-h))}
+.chart-panel,.signal-panel{background:var(--surface);backdrop-filter:blur(var(--blur));border-radius:var(--radius);
+                           overflow:hidden;display:flex;flex-direction:column}
+.chart{flex:1}
+.signal-panel h2{font-size:14px;font-weight:600;padding:12px 16px;border-bottom:1px solid #293038}
+table{width:100%;font-size:12px;border-collapse:collapse}
+thead{background:#0f172a;position:sticky;top:0}
+th,td{padding:8px;text-align:center}
+tbody tr:nth-child(odd){background:#131a26}
+tbody td.buy{color:var(--accent);font-weight:600}
+tbody td.sell{color:#ef4444;font-weight:600}
 
-  <div class="banner" id="updateBanner"></div>
-
-  <header class="iq-topbar">
-    <div class="dropdown">
-      <label for="pairSelect">Ativo</label>
-      <select id="pairSelect">
-        <option value="btcusdt">BTC/USDT</option>
-        <option value="eurusd">EUR/USD</option>
-        <option value="gbpusd">GBP/USD</option>
-        <option value="audusd">AUD/USD</option>
-        <option value="usdchf">USD/CHF</option>
-        <option value="usdjpy">USD/JPY</option>
-        <option value="usdcad">USD/CAD</option>
-      </select>
-    </div>
-    <div class="dropdown">
-      <label for="intervalSelect">Tempo</label>
-      <select id="intervalSelect">
-        <option value="1m" selected>1 min</option>
-        <option value="5m">5 min</option>
-        <option value="15m">15 min</option>
-      </select>
-    </div>
-    <div class="dropdown">
-      <label for="typeSelect">Visualização</label>
-      <select id="typeSelect">
-        <option value="candle">Velas</option>
-        <option value="line">Linha</option>
-        <option value="area">Área</option>
-      </select>
-    </div>
-  </header>
-
-  <main id="chart"></main>
-
-  <script src="script.js"></script>
-</body>
-</html>
-"""
-
-# Escrevendo os arquivos
-html_path.write_text(html_content.strip(), encoding="utf-8")
-css_path.write_text(css_content.strip(), encoding="utf-8")
-js_path.write_text(js_content.strip(), encoding="utf-8")
-
-html_path, css_path, js_path
+/* =====  MEDIA LIMITER (HD+)  ===== */
+@media (max-width:1280px){
+  .workspace{grid-template-columns:1fr}
+  .signal-panel{max-height:240px}
+}
