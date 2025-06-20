@@ -3,60 +3,96 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Plataforma Trade</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <title>Trade Desk Pro</title>
+
+  <!-- Ícones -->
+  <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+        crossorigin="anonymous"/>
+
+  <!-- Estilos -->
   <link rel="stylesheet" href="style.css" />
-</head>
-<body>
-  <!-- SIDEBAR -->
-  <nav class="iq-sidebar" aria-label="Navegação lateral">
-    <ul class="menu">
-      <li><i class="fas fa-chart-line"></i><span>Gráfico</span></li>
-      <li><i class="fas fa-bolt"></i><span>Sinais</span></li>
-      <li><i class="fas fa-table"></i><span>Histórico</span></li>
-      <li><i class="fas fa-cog"></i><span>Config</span></li>
-    </ul>
-  </nav>
-
-  <!-- BANNER -->
-  <div class="banner" id="updateBanner"></div>
-
-  <!-- TOPO -->
-  <header class="iq-topbar">
-    <div class="dropdown">
-      <label for="pairSelect">Ativo</label>
-      <select id="pairSelect">
-        <option value="btcusdt">BTC/USDT</option>
-        <option value="ethusdt">ETH/USDT</option>
-        <option value="bnbusdt">BNB/USDT</option>
-        <option value="solusdt">SOL/USDT</option>
-        <option value="xrpusdt">XRP/USDT</option>
-      </select>
-    </div>
-    <div class="dropdown">
-      <label for="intervalSelect">Tempo</label>
-      <select id="intervalSelect">
-        <option value="1m" selected>1 min</option>
-        <option value="5m">5 min</option>
-        <option value="15m">15 min</option>
-      </select>
-    </div>
-    <div class="dropdown">
-      <label for="typeSelect">Visualização</label>
-      <select id="typeSelect">
-        <option value="candle">Velas</option>
-        <option value="line">Linha</option>
-        <option value="area">Área</option>
-      </select>
-    </div>
-  </header>
-
-  <!-- GRÁFICO -->
-  <main id="chart"></main>
 
   <!-- Biblioteca de gráficos -->
   <script src="https://unpkg.com/lightweight-charts@4.1.1/dist/lightweight-charts.standalone.production.js"></script>
-  <!-- Script principal -->
+</head>
+<body>
+  <!-- ────────────── SIDEBAR ────────────── -->
+  <aside class="sidebar" aria-label="menu principal">
+    <ul>
+      <li data-tip="Painel"><i class="fas fa-chart-line"></i></li>
+      <li data-tip="Sinais"><i class="fas fa-bolt"></i></li>
+      <li data-tip="Histórico"><i class="fas fa-table"></i></li>
+      <li data-tip="Config." ><i class="fas fa-cog"></i></li>
+      <li data-tip="Ajuda"  ><i class="fas fa-circle-info"></i></li>
+    </ul>
+  </aside>
+
+  <!-- ────────────── TOPO ────────────── -->
+  <header class="topbar">
+    <h1>Trade Desk Pro</h1>
+
+    <div class="selectors">
+      <div class="select-box">
+        <label>Ativo</label>
+        <select id="pairSelect">
+          <option value="btcusdt">BTC/USDT</option>
+          <option value="ethusdt">ETH/USDT</option>
+          <option value="bnbusdt">BNB/USDT</option>
+          <option value="solusdt">SOL/USDT</option>
+          <option value="eurusd">EUR/USD</option>
+        </select>
+      </div>
+
+      <div class="select-box">
+        <label>Tempo</label>
+        <select id="intervalSelect">
+          <option value="1m" selected>1 m</option>
+          <option value="5m">5 m</option>
+          <option value="15m">15 m</option>
+        </select>
+      </div>
+
+      <div class="select-box">
+        <label>Visual</label>
+        <select id="typeSelect">
+          <option value="candle">Velas</option>
+          <option value="line">Linha</option>
+          <option value="area">Área</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="status-box">
+      <span id="priceBadge">---</span>
+      <span id="changeBadge">0,00 %</span>
+    </div>
+  </header>
+
+  <!-- ────────────── BANNER DE EVENTOS ────────────── -->
+  <div id="eventBanner" class="banner"></div>
+
+  <!-- ────────────── ÁREA PRINCIPAL ────────────── -->
+  <main class="workspace">
+    <section class="chart-panel">
+      <div id="chart" class="chart"></div>
+    </section>
+
+    <section class="signal-panel">
+      <h2>Últimos Sinais</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Hora</th><th>Par</th><th>Tf</th>
+            <th>Tipo</th><th>Preço</th><th>Exp.</th>
+          </tr>
+        </thead>
+        <tbody id="signalTableBody"></tbody>
+      </table>
+    </section>
+  </main>
+
+  <!-- Seu JS (já funcional) -->
   <script src="script.js"></script>
 </body>
 </html>
