@@ -1,35 +1,50 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Plataforma de Análise de Trade em Tempo Real</title>
-    <link rel="stylesheet" href="style.css" />
-    <!-- TradingView Lightweight Charts CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/technicalindicators@4.0.5/dist/browser.js"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Trade Insights</title>
+
+  <!-- Estilos básicos -->
+  <link rel="stylesheet" href="style.css" />
+
+  <!-- Lightweight Charts -->
+  <script src="https://unpkg.com/lightweight-charts@4.1.1/dist/lightweight-charts.standalone.production.js"></script>
+  <!-- Technical Indicators -->
+  <script src="https://cdn.jsdelivr.net/npm/technicalindicators@4.0.5/dist/browser.js"></script>
 </head>
 <body>
-    <header>
-         <label for="intervalSelect" style="margin-left:12px;">Timeframe:</label>
-        <select id="intervalSelect">
-        <h1>Trade Insights</h1>
-        <div class="controls">
-            <label for="pairSelect">Par:</label>
-            <select id="pairSelect">
-                <option value="btcusdt">BTC/USDT</option>
-                <option value="ethusdt">ETH/USDT</option>
-                <option value="bnbusdt">BNB/USDT</option>
-            </select>
-        </div>
-    </header>
-    <main>
-        <div id="chart" class="chart"></div>
-        <p id="signal" class="signal"></p>
-    </main>
-    <footer>
-        <small>&copy; 2025 - Plataforma de Análise de Operações Binárias</small>
-    </footer>
-    <script src="script.js"></script>
+  <header>
+    <h1>Trade Insights</h1>
+
+    <div class="controls">
+      <label for="pairSelect">Par:</label>
+      <select id="pairSelect">
+        <option value="btcusdt">BTC/USDT</option>
+        <option value="ethusdt">ETH/USDT</option>
+        <option value="bnbusdt">BNB/USDT</option>
+        <option value="eurusdt">EUR/USDT</option><!-- par extra -->
+      </select>
+
+      <label for="intervalSelect" style="margin-left:12px;">Timeframe:</label>
+      <select id="intervalSelect">
+        <option value="1m" selected>1 m</option>
+        <option value="5m">5 m</option>
+        <option value="15m">15 m</option>
+      </select>
+    </div>
+  </header>
+
+  <main>
+    <div id="chart" class="chart"></div>
+    <p id="signal" class="signal"></p>
+  </main>
+
+  <footer>
+    <small>&copy; 2025 - Plataforma de Análise de Operações Binárias</small>
+  </footer>
+
+  <!-- Script principal -->
+  <script src="script.js"></script>
 </body>
 </html>
