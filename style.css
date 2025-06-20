@@ -29,3 +29,11 @@ tbody tr:nth-child(odd){background:#10141b}
 .sell{color:var(--red);font-weight:600}
 
 footer{background:var(--panel);text-align:center;font-size:.75rem;padding:4px}
+.signal-banner{
+  position:fixed;top:64px;right:20px;z-index:1000;
+  padding:10px 16px;border-radius:8px;font-weight:600;
+  background:#444;color:#fff;box-shadow:0 4px 12px rgba(0,0,0,.25);
+  opacity:0;transform:translateY(-20px);transition:.3s ease;
+}
+.signal-banner.show{opacity:1;transform:translateY(0);}
+
