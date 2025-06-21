@@ -31,6 +31,23 @@ let chart, candleSeries, smaSeries, tradeSeries, priceLine,
     lastPrice = null, lastAbove = null,
     zoomed = false, indVisible = true,
     fibLines = [], trendSeries = null;
+    /* ==== helpers RSI & MACD (technicalindicators) ==== */
+function getRSI(src) {
+  const r = ti.rsi({ values: src.map(c => c.close), period: 14 });
+  return r.length ? r[r.length - 1] : 50;
+}
+function getMACDHist(src) {
+  const m = ti.macd({
+    values: src.map(c => c.close),
+    fastPeriod: 12,
+    slowPeriod: 26,
+    signalPeriod: 9,
+    SimpleMAOscillator: false,
+    SimpleMASignal: false
+  });
+  return m.length ? m[m.length - 1].histogram : 0;
+}
+
 
 /* ---------- init ---------- */
 toggleSig.addEventListener('click', ()=> panelEl.classList.toggle('collapsed'));
@@ -162,6 +179,10 @@ function bannerMsg(msg,pos=true){
   banner.classList.add('show');
   setTimeout(()=>banner.classList.remove('show'),3000);
 }
+if (k.x) {                // vela fechou
+  askAI(c);               // <<< chama IA
+}
+
 
 /* ---------- sinais ---------- */
 function checkSignal(c){
@@ -193,6 +214,36 @@ function addSignal(time,type,price){
   tableBody.insertAdjacentHTML('afterbegin',row);
   if(tableBody.rows.length>60)tableBody.deleteRow(-1);
 }
+/* ---------- consulta IA ---------- */
+async function askAI(c) {
+  const payload = {
+    symbol:   pairSel.value.toUpperCase(),
+    interval: intSel.value,
+    price:    c.close,
+    sma:      smaQ[smaQ.length - 1],
+    rsi:      getRSI(candles),
+    macdHist: getMACDHist(candles)
+  };
+
+  try {
+    const res = await fetch('/.netlify/functions/signal', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    const sig = await res.json();             // {action,confidence,comment}
+
+    if (sig.action !== 'WAIT') {
+      addSignal(c.time, sig.action, c.close);                     // tabela + marker
+      bannerMsg(`${sig.action} (${Math.round(sig.confidence*100)}%) – ${sig.comment}`,
+                sig.action === 'BUY');
+      console.log('IA sinal', sig);
+    }
+  } catch (e) {
+    console.error('Erro IA', e);
+  }
+}
+
 
 /* ---------- botões laterais ---------- */
 function toggleFib(){
