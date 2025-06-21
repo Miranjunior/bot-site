@@ -57,7 +57,9 @@ function initChart(){
       /* formata HH:MM sempre */
       localization:{timeFormatter:t=>{
         const d=new Date(t*1000);
-        return d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+        return d.toLocaleTimeString('pt-BR',{
+          hour:'2-digit',minute:'2-digit'
+        });
       }}
     }
   });
@@ -75,9 +77,14 @@ async function loadData(){
   // histórico
   const hist= await fetch(`https://api.binance.com/api/v3/klines?symbol=${pair}&interval=${int}&limit=200`)
                      .then(r=>r.json());
-  candles = hist.map(k=>({time:k[0]/1000,open:+k[1],high:+k[2],low:+k[3],close:+k[4]}));
+  candles = hist.map(k=>({time:k[6]/1000,open:+k[1],high:+k[2],low:+k[3],close:+k[4]}));
   candleSeries.setData(candles);
   smaSeries.setData(calcSMA(candles));
+  smaQ = candles.slice(-smaP).map(c=>c.close);
+  lastPrice = candles[candles.length-1].close;
+  const lastSma = smaQ.reduce((s,x)=>s+x,0)/smaQ.length;
+  lastAbove = lastPrice>lastSma;
+  priceLine.applyOptions({price:lastPrice,title:lastPrice.toFixed(2)});
 
   // tipo
   applyType();
@@ -98,7 +105,7 @@ function openSockets(sym,int){
   wsCandle = new WebSocket(`wss://stream.binance.com:9443/ws/${sym.toLowerCase()}@kline_${int}`);
   wsCandle.onmessage = e=>{
     const k=JSON.parse(e.data).k;
-    const c={time:k.t/1000,open:+k.o,high:+k.h,low:+k.l,close:+k.c};
+    const c={time:k.T/1000,open:+k.o,high:+k.h,low:+k.l,close:+k.c};
     candleSeries.update(c);
     priceLine.applyOptions({price:c.close,title:c.close.toFixed(2)});
     updateLive(c.close);
