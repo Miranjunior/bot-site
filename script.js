@@ -4,8 +4,14 @@
 
 /* ───────── Elementos do DOM ───────── */
 // garante que 'ti' aponte para o objeto da biblioteca
-const ti = window.technicalindicators;
 
+
+// compatibilidade: tenta pegar a lib seja ela ti ou technicalindicators
+const ti = window.ti || window.technicalindicators;
+
+/* helpers seguros: procuram RSI/MACD em maiúsculas ou minúsculas */
+const fnRSI  = ti?.RSI  || ti?.rsi;
+const fnMACD = ti?.MACD || ti?.macd;
 const chartEl      = document.getElementById('chart');
 const panelEl      = document.getElementById('signalPanel');
 const priceBadge   = document.getElementById('priceBadge');
@@ -164,20 +170,26 @@ function updateSMAQueue(price, closed) {
   return smaQ.reduce((s, x) => s + x, 0) / smaQ.length;
 }
 
-/* technicalindicators helpers */
 function getRSI(src) {
-  const r = ti.rsi({ values: src.map(c => c.close), period: 14 });
+  if (!fnRSI) return 50;                          // fallback neutro
+  const r = fnRSI({ values: src.map(c => c.close), period: 14 });
   return r.length ? r[r.length - 1] : 50;
 }
+
 function getMACDHist(src) {
-  const m = ti.macd({
+  if (!fnMACD) return 0;
+  const m = fnMACD({
     values: src.map(c => c.close),
     fastPeriod: 12,
     slowPeriod: 26,
-    signalPeriod: 9
+    signalPeriod: 9,
+    SimpleMAOscillator: false,
+    SimpleMASignal: false,
   });
   return m.length ? m[m.length - 1].histogram : 0;
 }
+
+
 
 /* ───────── IA (serverless) ───────── */
 async function askAI(c) {
