@@ -3,6 +3,9 @@
  **************************************************/
 
 /* ───────── Elementos do DOM ───────── */
+// garante que 'ti' aponte para o objeto da biblioteca
+const ti = window.technicalindicators;
+
 const chartEl      = document.getElementById('chart');
 const panelEl      = document.getElementById('signalPanel');
 const priceBadge   = document.getElementById('priceBadge');
