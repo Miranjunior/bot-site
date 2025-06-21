@@ -87,7 +87,8 @@ async function loadData() {
   const hist = await fetch(`https://api.binance.com/api/v3/klines?symbol=${pair}&interval=${tf}&limit=200`)
                        .then(r => r.json());
   candles = hist.map(k => ({
-    time:  k[0] / 1000,
+    // usa o horário de fechamento para alinhar com o relógio atual
+    time:  k[6] / 1000,
     open:  +k[1],
     high:  +k[2],
     low:   +k[3],
@@ -114,7 +115,8 @@ function openSockets(sym, tf) {
   wsCandle.onmessage = (e) => {
     const k = JSON.parse(e.data).k;
     const c = {
-      time:  k.t / 1000,
+      // usa o horário de fechamento para alinhar ao relógio
+      time:  k.T / 1000,
       open:  +k.o,
       high:  +k.h,
       low:   +k.l,
@@ -240,6 +242,10 @@ function bannerMsg(msg, pos = true) {
 }
 
 /* ───────── Sinais visuais ───────── */
+// Gera sinais locais simples baseados no cruzamento do preço
+// com a média móvel (SMA de 14 períodos). Quando o preço cruza
+// de baixo para cima emitimos BUY; se cruza para baixo emitimos SELL.
+// Esses sinais são apenas indicações de entrada.
 function checkSignal(c) {
   const smaVal = smaQ[smaQ.length - 1];
   if (smaVal === undefined) return;
