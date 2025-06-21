@@ -1,0 +1,23 @@
+{
+  "name": "bot-site-1",
+  "version": "1.0.0",
+  "description": "",
+  "main": "script.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Miranjunior/bot-site.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Miranjunior/bot-site/issues"
+  },
+  "homepage": "https://github.com/Miranjunior/bot-site#readme",
+  "dependencies": {
+    "openai": "^4.104.0"
+  }
+}
